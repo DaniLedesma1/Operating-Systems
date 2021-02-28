@@ -1,0 +1,93 @@
+#!/bin/bash
+ 
+
+FILENAME1=file1.txt
+FILENAME2=file2.txt
+FILENAME3=file3.dat
+
+
+# 1. Comprobará que el programa mytar está en el directorio actual y que es ejecutable. En caso contrario mostrará un mensaje informativo por pantalla y terminará.
+
+if [ ! -e ./Mytar ]; then
+    echo "Not found"
+    
+    
+elif [ ! -x ./Mytar ]; then
+	
+	echo "Mytar is not executable"
+    
+fi
+
+
+
+
+# 2. Comprobará si existe un directorio tmp dentro del directorio actual. Si existe lo borrará, incluyendo todo lo que haya dentro de él (mirar la opción -r del comando rm).
+
+if [ -d "tmp" ]; then
+	
+	rm -r tmp  
+	echo "TMP borrado"
+fi
+
+# 3.  Creará un nuevo directorio temporal tmp dentro del directorio actual y cambiará a este directorio
+
+mkdir tmp 
+cd tmp	  
+
+# 4. Creará tres ficheros (dentro del directorio):
+
+if [ ! -e $FILENAME1 ]; then
+	touch $FILENAME1 
+	echo "Hello World!" > $FILENAME1
+fi
+if [ ! -e $FILENAME2 ]; then
+	touch $FILENAME2 
+	head -10 /etc/passwd > $FILENAME2 
+fi
+if [ ! -e $FILENAME3 ]; then
+	touch $FILENAME3 
+	head -c 1024 /dev/urandom > $FILENAME3
+fi
+
+# 5. Invocará el programa mytar que hemos desarrollado, para crear un fichero filetar.mtar con el contenido de los tres ficheros anteriores
+
+../mytar -c -f filetar.mtar $FILENAME1 $FILENAME2 $FILENAME3
+
+# 6. Creará un directorio out (dentro del directorio actual, que debe ser tmp) y copiará el fichero filetar.mtar al nuevo directorio.
+
+if [ ! -d out ]; then
+	mkdir out 
+fi
+
+cp filetar.mtar /out/filetar.mtar 
+
+# 7. Cambiará al directorio out y ejecutará el programa mytar para extraer el contenido del tarball.
+
+cd out
+../../mytar -x -f filetar.mtar # extrae los ficheros en la carpeta out
+
+# 8. Usará el programa diff para comparar los fichero extraídos con los originales, que estarán en el directorio anterior (..).
+
+if diff ../$FILENAME1 $FILENAME1 >/dev/null ; then
+  	echo "Los ficheros1 son iguales"
+else
+  	echo "Los ficheros1 son diferentes"
+  	
+fi
+
+if diff ../$FILENAME2 $FILENAME2 >/dev/null ; then
+  	echo "Los ficheros2 son iguales"
+else
+  	echo "Los ficheros2 son diferentes"
+  	
+fi
+
+if diff ../$FILENAME3 $FILENAME3 >/dev/null ; then
+  	echo "Los ficheros3 son iguales"
+else
+  	echo "Los ficheros3 son diferentes"
+	
+fi
+
+
+
